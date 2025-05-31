@@ -83,21 +83,15 @@ const reducer = (state: AppState, action: Action): AppState => {
         },
       };
     case GET_TASK: {
-      // Get existing tasks or initialize empty array
       const existingTasks = state.tasks[action.payload.taskListId] || [];
-
-      // Check if task exists
       const taskExists = existingTasks.some(
         (task) => task.id === action.payload.task.id
       );
-
-      // Either update existing task or add new one
       const updatedTasks = taskExists
         ? existingTasks.map((task) =>
             task.id === action.payload.task.id ? action.payload.task : task
           )
         : [...existingTasks, action.payload.task];
-
       return {
         ...state,
         tasks: {
@@ -178,30 +172,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   // API calls
   const api: AppContextType["api"] = {
     fetchTaskLists: async () => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
       const response = await axios.get<TaskList[]>(
-        "/api/task-lists",
+        `${apiBaseUrl}/task-lists`, // Changed from /api/task-lists to /task-lists
         jsonHeaders
       );
       dispatch({ type: FETCH_TASKLISTS, payload: response.data });
     },
     getTaskList: async (id: string) => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
       const response = await axios.get<TaskList>(
-        `/api/task-lists/${id}`,
+        `${apiBaseUrl}/task-lists/${id}`,
         jsonHeaders
       );
       dispatch({ type: GET_TASKLIST, payload: response.data });
     },
     createTaskList: async (taskList) => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
       const response = await axios.post<TaskList>(
-        "/api/task-lists",
+        `${apiBaseUrl}/task-lists`,
         taskList,
         jsonHeaders
       );
       dispatch({ type: CREATE_TASKLIST, payload: response.data });
     },
     getTask: async (taskListId: string, taskId: string) => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
       const response = await axios.get<Task>(
-        `/api/task-lists/${taskListId}/tasks/${taskId}`,
+        `${apiBaseUrl}/task-lists/${taskListId}/tasks/${taskId}`,
         jsonHeaders
       );
       dispatch({
@@ -210,20 +208,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       });
     },
     updateTaskList: async (id, taskList) => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
       const response = await axios.put<TaskList>(
-        `/api/task-lists/${id}`,
+        `${apiBaseUrl}/task-lists/${id}`,
         taskList,
         jsonHeaders
       );
       dispatch({ type: UPDATE_TASKLIST, payload: response.data });
     },
     deleteTaskList: async (id) => {
-      await axios.delete(`/api/task-lists/${id}`, jsonHeaders);
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
+      await axios.delete(`${apiBaseUrl}/task-lists/${id}`, jsonHeaders);
       dispatch({ type: DELETE_TASKLIST, payload: id });
     },
     fetchTasks: async (taskListId) => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
       const response = await axios.get<Task[]>(
-        `/api/task-lists/${taskListId}/tasks`,
+        `${apiBaseUrl}/task-lists/${taskListId}/tasks`,
         jsonHeaders
       );
       dispatch({
@@ -232,8 +233,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       });
     },
     createTask: async (taskListId, task) => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
       const response = await axios.post<Task>(
-        `/api/task-lists/${taskListId}/tasks`,
+        `${apiBaseUrl}/task-lists/${taskListId}/tasks`,
         task,
         jsonHeaders
       );
@@ -243,8 +245,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       });
     },
     updateTask: async (taskListId, taskId, task) => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
       const response = await axios.put<Task>(
-        `/api/task-lists/${taskListId}/tasks/${taskId}`,
+        `${apiBaseUrl}/task-lists/${taskListId}/tasks/${taskId}`,
         task,
         jsonHeaders
       );
@@ -254,8 +257,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       });
     },
     deleteTask: async (taskListId, taskId) => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://tasks-production-d8b8.up.railway.app';
       await axios.delete(
-        `/api/task-lists/${taskListId}/tasks/${taskId}`,
+        `${apiBaseUrl}/task-lists/${taskListId}/tasks/${taskId}`,
         jsonHeaders
       );
       dispatch({ type: DELETE_TASK, payload: { taskListId, taskId } });

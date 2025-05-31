@@ -1,18 +1,35 @@
 import { Button, Card, CardBody, Progress } from "@nextui-org/react";
 import { List, Plus } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../AppProvider";
 
 const TaskListScreen: React.FC = () => {
   const { state, api } = useAppContext();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch task lists when the component mounts
   useEffect(() => {
-    if (null == state.taskLists) {
-      api.fetchTaskLists();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        await api.fetchTaskLists();
+        setLoading(false);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch task lists"
+        );
+        setLoading(false);
+      }
+    };
+
+    if (!state.taskLists || state.taskLists.length === 0) {
+      fetchData();
+    } else {
+      setLoading(false);
     }
-  }, [state]);
+  }, [state.taskLists, api]);
 
   // Get a handle on the router
   const navigate = useNavigate();
@@ -26,6 +43,9 @@ const TaskListScreen: React.FC = () => {
     console.log(`Navigating to task list ${taskListId}`);
   };
 
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <div className="p-4 max-w-sm w-full">
       <h1 className="text-2xl font-bold mb-4 pr-2">My Task Lists</h1>
@@ -38,8 +58,8 @@ const TaskListScreen: React.FC = () => {
       >
         Create New Task List
       </Button>
-      {state.taskLists.map((list) => {
-        return (
+      {Array.isArray(state.taskLists) && state.taskLists.length > 0 ? (
+        state.taskLists.map((list) => (
           <Card
             key={list.id}
             isPressable
@@ -55,19 +75,25 @@ const TaskListScreen: React.FC = () => {
                   className="mr-2 opacity-[40%]"
                   aria-hidden="true"
                 />
-                <h2 className="text-lg font-semibold">{list.title}</h2>{" "}
+                <h2 className="text-lg font-semibold">{list.title}</h2>
               </div>
               <p className="text-sm text-gray-500 mt-2">{list.count} tasks</p>
               <Progress
-                value={list.progress ? list.progress * 100 : 0}
+                value={
+                  list.progress && !isNaN(list.progress)
+                    ? list.progress * 100
+                    : 0
+                }
                 className="mt-2"
                 color="primary"
                 aria-label={`Progress for ${list.title}: ${list.progress}%`}
               />
             </CardBody>
           </Card>
-        );
-      })}
+        ))
+      ) : (
+        <div>No task lists available</div>
+      )}
     </div>
   );
 };
